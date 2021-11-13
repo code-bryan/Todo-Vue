@@ -28,39 +28,38 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-
-interface Todo {
-  id: number;
-  text: string;
-  completed: boolean;
-}
-
-interface IData {
-  text: string;
-  todos: Todo[]
-}
+import { ADD_TODO, CHANGE_TEXT, Todo } from '@/store';
 
 export default defineComponent({
   name: 'Home',
-  data(): IData {
-    return { todos: [], text: '' };
-  },
   methods: {
     addTodo() {
-      const exist = this.todos.find((e) => e.text === this.text);
-      if (this.text.length <= 0 || !!exist) return;
+      const { todos, text } = this.$store.state;
 
-      const todo: Todo = { id: this.todos.length + 1, text: this.text, completed: false };
-      this.todos.push(todo);
-      this.text = '';
+      if (text.length <= 0 || this.$store.getters.findTodoByText()) return;
+
+      const todo: Todo = { id: todos.length + 1, text, completed: false };
+      this.$store.dispatch(ADD_TODO, todo);
+      this.$store.commit(CHANGE_TEXT, { text: '' });
     },
-    completeTodo(todo: Todo) {
-      const todos = this.todos.filter((current) => todo.id !== current.id);
-      const updated: Todo = { ...todo, completed: !todo.completed };
-      this.todos = [...todos, updated];
+    close() {
+      console.log('test');
     },
-    close(todo: Todo) {
-      this.todos = this.todos.filter((current) => todo.id !== current.id);
+  },
+  created() {
+    console.log(this.$store.state.text);
+  },
+  computed: {
+    text: {
+      get() {
+        return this.$store.state.text;
+      },
+      set(text: string) {
+        this.$store.commit(CHANGE_TEXT, { text });
+      },
+    },
+    todos() {
+      return this.$store.state.todos;
     },
   },
 });
